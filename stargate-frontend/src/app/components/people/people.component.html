@@ -1,0 +1,186 @@
+<div class="people">
+  <!-- Notifications -->
+  <div class="notifications" *ngIf="notifications.length > 0">
+    <div 
+      *ngFor="let notification of notifications; let i = index" 
+      class="notification"
+      [class]="'notification-' + notification.type"
+    >
+      <div class="notification-content">
+        <span class="notification-icon">
+          <span *ngIf="notification.type === 'success'">✓</span>
+          <span *ngIf="notification.type === 'error'">✗</span>
+          <span *ngIf="notification.type === 'info'">ℹ</span>
+        </span>
+        <span class="notification-message">{{ notification.message }}</span>
+      </div>
+      <button class="notification-close" (click)="dismissNotification(i)">×</button>
+    </div>
+  </div>
+
+  <div class="people-header">
+    <h1>People Management</h1>
+    <p>Manage people in the Stargate ACTS system</p>
+  </div>
+
+  <!-- Search and Actions -->
+  <div class="people-controls">
+    <div class="search-box">
+      <input 
+        type="text" 
+        placeholder="Search people by name, rank, or duty title..." 
+        [(ngModel)]="searchTerm"
+        (input)="searchPeople()"
+        class="search-input"
+        [disabled]="isLoading"
+      >
+      <span class="search-icon">🔍</span>
+    </div>
+    
+    <button 
+      class="btn btn-primary" 
+      (click)="showCreateForm = true"
+      [disabled]="isLoading"
+    >
+      <span class="btn-icon">➕</span>
+      Add Person
+    </button>
+  </div>
+
+  <!-- People List -->
+  <div class="people-list" [class.loading]="isLoading">
+    <div *ngFor="let person of filteredPeople" class="person-card">
+      <div class="person-info">
+        <h3>{{ person.name }}</h3>
+        <div class="person-details">
+          <span *ngIf="person.currentRank" class="detail-item">
+            <strong>Rank:</strong> {{ person.currentRank }}
+          </span>
+          <span *ngIf="person.currentDutyTitle" class="detail-item">
+            <strong>Duty:</strong> {{ person.currentDutyTitle }}
+          </span>
+          <span *ngIf="person.careerStartDate" class="detail-item">
+            <strong>Career Start:</strong> {{ person.careerStartDate | date:'MMM d, y' }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="person-actions">
+        <span [class]="'status-badge ' + getStatusBadgeClass(person.currentDutyTitle)">
+          {{ getStatusText(person.currentDutyTitle) }}
+        </span>
+        <button 
+          class="btn btn-secondary btn-sm" 
+          (click)="startEdit(person)"
+          [disabled]="isLoading"
+        >
+          Edit
+        </button>
+      </div>
+    </div>
+    
+    <div *ngIf="filteredPeople.length === 0 && !isLoading" class="empty-state">
+      <div class="empty-icon">👥</div>
+      <h3>No people found</h3>
+      <p *ngIf="searchTerm">No people match your search criteria.</p>
+      <p *ngIf="!searchTerm">Get started by adding your first person to the system.</p>
+      <button *ngIf="!searchTerm" class="btn btn-primary" (click)="showCreateForm = true">
+        Add First Person
+      </button>
+    </div>
+  </div>
+
+  <!-- Create Person Modal -->
+  <div class="modal-overlay" *ngIf="showCreateForm" (click)="cancelCreate()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Add New Person</h2>
+        <button class="modal-close" (click)="cancelCreate()">×</button>
+      </div>
+      
+      <div class="modal-body">
+        <form (ngSubmit)="createPerson()">
+          <div class="form-group">
+            <label for="create-name">Full Name</label>
+            <input 
+              type="text" 
+              id="create-name"
+              [(ngModel)]="createForm.name"
+              name="name"
+              placeholder="Enter person's full name"
+              class="form-input"
+              [class.error]="hasFormError('name')"
+              required
+              maxlength="100"
+              (blur)="validateCreateForm()"
+            >
+            <div *ngIf="hasFormError('name')" class="form-error">
+              {{ getFormError('name') }}
+            </div>
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" (click)="cancelCreate()">
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary" 
+              [disabled]="!createForm.name.trim() || hasFormError('name') || isLoading"
+            >
+              <span *ngIf="isLoading" class="btn-spinner">⟳</span>
+              Create Person
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Person Modal -->
+  <div class="modal-overlay" *ngIf="showEditForm" (click)="cancelEdit()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Edit Person</h2>
+        <button class="modal-close" (click)="cancelEdit()">×</button>
+      </div>
+      
+      <div class="modal-body">
+        <form (ngSubmit)="updatePerson()">
+          <div class="form-group">
+            <label for="edit-name">Full Name</label>
+            <input 
+              type="text" 
+              id="edit-name"
+              [(ngModel)]="editForm.newName"
+              name="newName"
+              placeholder="Enter person's full name"
+              class="form-input"
+              [class.error]="hasFormError('newName')"
+              required
+              maxlength="100"
+              (blur)="validateEditForm()"
+            >
+            <div *ngIf="hasFormError('newName')" class="form-error">
+              {{ getFormError('newName') }}
+            </div>
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" (click)="cancelEdit()">
+              Cancel
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary" 
+              [disabled]="!editForm.newName.trim() || hasFormError('newName') || isLoading"
+            >
+              <span *ngIf="isLoading" class="btn-spinner">⟳</span>
+              Update Person
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<header class="header">
+  <div class="header-container">
+    <div class="logo-section">
+      <div class="logo">
+        <span class="logo-icon">🚀</span>
+        <h1 class="logo-text">{{ title }}</h1>
+      </div>
+      <p class="subtitle">Astronaut Career Tracking System</p>
+    </div>
+    
+    <nav class="navigation">
+      <ul class="nav-list">
+        <li *ngFor="let item of navigationItems" class="nav-item">
+          <a [routerLink]="item.route" class="nav-link" routerLinkActive="active">
+            <span class="nav-icon">{{ getIcon(item.icon) }}</span>
+            <span class="nav-label">{{ item.label }}</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</header>

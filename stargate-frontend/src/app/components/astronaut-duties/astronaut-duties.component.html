@@ -1,0 +1,194 @@
+<div class="astronaut-duties">
+  <div class="duties-header">
+    <h1>Astronaut Duties</h1>
+    <p>Manage astronaut duty assignments and view career histories</p>
+  </div>
+
+  <!-- Actions -->
+  <div class="duties-actions">
+    <button class="btn btn-primary" (click)="showCreateForm = true">
+      <span class="btn-icon">➕</span>
+      Assign New Duty
+    </button>
+  </div>
+
+  <!-- People List with Duties -->
+  <div class="duties-list">
+    <div *ngFor="let person of people" class="duty-card">
+      <div class="duty-info">
+        <h3>{{ person.name }}</h3>
+        <div class="duty-details">
+          <span *ngIf="person.currentRank" class="detail-item">
+            <strong>Current Rank:</strong> {{ person.currentRank }}
+          </span>
+          <span *ngIf="person.currentDutyTitle" class="detail-item">
+            <strong>Current Duty:</strong> {{ person.currentDutyTitle }}
+          </span>
+          <span *ngIf="person.careerStartDate" class="detail-item">
+            <strong>Career Start:</strong> {{ formatDate(person.careerStartDate) }}
+          </span>
+        </div>
+      </div>
+      
+      <div class="duty-actions">
+        <span [class]="'status-badge ' + getStatusBadgeClass(person.currentDutyTitle)">
+          {{ getStatusText(person.currentDutyTitle) }}
+        </span>
+        <button class="btn btn-secondary btn-sm" (click)="viewAstronautDetails(person)">
+          View Details
+        </button>
+      </div>
+    </div>
+    
+    <div *ngIf="people.length === 0" class="empty-state">
+      <div class="empty-icon">🚀</div>
+      <h3>No people found</h3>
+      <p>No people are available to assign duties to. <a routerLink="/people">Add people first</a>.</p>
+    </div>
+  </div>
+
+  <!-- Create Duty Modal -->
+  <div class="modal-overlay" *ngIf="showCreateForm" (click)="cancelCreate()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Assign New Astronaut Duty</h2>
+        <button class="modal-close" (click)="cancelCreate()">×</button>
+      </div>
+      
+      <div class="modal-body">
+        <form (ngSubmit)="createDuty()">
+          <div class="form-group">
+            <label for="duty-name">Person Name</label>
+            <select 
+              id="duty-name"
+              [(ngModel)]="createForm.name"
+              name="name"
+              class="form-input"
+              required
+            >
+              <option value="">Select a person</option>
+              <option *ngFor="let person of people" [value]="person.name">
+                {{ person.name }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="duty-rank">Rank</label>
+            <input 
+              type="text" 
+              id="duty-rank"
+              [(ngModel)]="createForm.rank"
+              name="rank"
+              placeholder="e.g., Captain, Major, Colonel"
+              class="form-input"
+              required
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="duty-title">Duty Title</label>
+            <input 
+              type="text" 
+              id="duty-title"
+              [(ngModel)]="createForm.dutyTitle"
+              name="dutyTitle"
+              placeholder="e.g., Commander, Pilot, Mission Specialist"
+              class="form-input"
+              required
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="duty-start-date">Start Date</label>
+            <input 
+              type="date" 
+              id="duty-start-date"
+              [(ngModel)]="createForm.dutyStartDate"
+              name="dutyStartDate"
+              class="form-input"
+              required
+            >
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" (click)="cancelCreate()">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="!createForm.name || !createForm.rank || !createForm.dutyTitle || !createForm.dutyStartDate">
+              Assign Duty
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Astronaut Details Modal -->
+  <div class="modal-overlay" *ngIf="showDetailsModal" (click)="closeDetailsModal()">
+    <div class="modal modal-large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ selectedPerson?.name }} - Career Details</h2>
+        <button class="modal-close" (click)="closeDetailsModal()">×</button>
+      </div>
+      
+      <div class="modal-body" *ngIf="astronautDetails">
+        <!-- Current Status -->
+        <div class="details-section">
+          <h3>Current Status</h3>
+          <div class="status-grid">
+            <div class="status-item">
+              <label>Rank:</label>
+              <span>{{ astronautDetails.person.currentRank || 'Not Assigned' }}</span>
+            </div>
+            <div class="status-item">
+              <label>Duty Title:</label>
+              <span>{{ astronautDetails.person.currentDutyTitle || 'Not Assigned' }}</span>
+            </div>
+            <div class="status-item">
+              <label>Career Start:</label>
+              <span>{{ astronautDetails.person.careerStartDate ? formatDate(astronautDetails.person.careerStartDate) : 'N/A' }}</span>
+            </div>
+            <div class="status-item">
+              <label>Career End:</label>
+              <span>{{ astronautDetails.person.careerEndDate ? formatDate(astronautDetails.person.careerEndDate) : 'Active' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Duty History -->
+        <div class="details-section">
+          <h3>Duty History</h3>
+          <div class="duty-history">
+            <div *ngFor="let duty of astronautDetails.astronautDuties" class="duty-item">
+              <div class="duty-header">
+                <h4>{{ duty.dutyTitle }}</h4>
+                <span class="duty-rank">{{ duty.rank }}</span>
+              </div>
+              <div class="duty-dates">
+                <span class="start-date">
+                  <strong>Start:</strong> {{ formatDate(duty.dutyStartDate) }}
+                </span>
+                <span class="end-date" *ngIf="duty.dutyEndDate">
+                  <strong>End:</strong> {{ formatDate(duty.dutyEndDate) }}
+                </span>
+                <span class="duration">
+                  <strong>Duration:</strong> {{ getDuration(duty.dutyStartDate, duty.dutyEndDate) }}
+                </span>
+              </div>
+              <div class="duty-status">
+                <span [class]="'status-badge ' + (duty.dutyEndDate ? 'status-completed' : 'status-current')">
+                  {{ duty.dutyEndDate ? 'Completed' : 'Current' }}
+                </span>
+              </div>
+            </div>
+            
+            <div *ngIf="astronautDetails.astronautDuties.length === 0" class="no-duties">
+              <p>No duty assignments found for this person.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

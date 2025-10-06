@@ -1,0 +1,124 @@
+<div class="reports">
+  <div class="reports-header">
+    <h1>Reports & Analytics</h1>
+    <p>Comprehensive overview of the Stargate ACTS system</p>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="summary-stats">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-content">
+        <h3>{{ stats.totalPeople }}</h3>
+        <p>Total People</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">🚀</div>
+      <div class="stat-content">
+        <h3>{{ stats.activeAstronauts }}</h3>
+        <p>Active Astronauts</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">🎖️</div>
+      <div class="stat-content">
+        <h3>{{ stats.retiredAstronauts }}</h3>
+        <p>Retired Astronauts</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">📊</div>
+      <div class="stat-content">
+        <h3>{{ stats.unassignedPeople }}</h3>
+        <p>Unassigned People</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Metrics -->
+  <div class="metrics-section">
+    <div class="metric-card">
+      <h3>Average Career Length</h3>
+      <div class="metric-value">{{ formatCareerLength(stats.averageCareerLength) }}</div>
+    </div>
+    
+    <div class="metric-card">
+      <h3>System Utilization</h3>
+      <div class="metric-value">{{ getUtilizationPercentage() }}%</div>
+      <div class="metric-subtitle">People with astronaut assignments</div>
+    </div>
+  </div>
+
+  <!-- Export Actions -->
+  <div class="export-section">
+    <h2>Export Data</h2>
+    <button class="btn btn-primary" (click)="exportToCSV()">
+      <span class="btn-icon">📊</span>
+      Export to CSV
+    </button>
+  </div>
+
+  <!-- Detailed Reports -->
+  <div class="detailed-reports">
+    <div class="report-section">
+      <h2>Active Astronauts</h2>
+      <div class="report-list">
+        <div *ngFor="let person of getPeopleByStatus('active')" class="report-item">
+          <div class="person-info">
+            <h4>{{ person.name }}</h4>
+            <p>{{ person.currentRank }} - {{ person.currentDutyTitle }}</p>
+          </div>
+          <span [class]="'status-badge ' + getStatusBadgeClass(person.currentDutyTitle)">
+            {{ getStatusText(person.currentDutyTitle) }}
+          </span>
+        </div>
+        <div *ngIf="getPeopleByStatus('active').length === 0" class="no-data">
+          No active astronauts found.
+        </div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h2>Retired Astronauts</h2>
+      <div class="report-list">
+        <div *ngFor="let person of getPeopleByStatus('retired')" class="report-item">
+          <div class="person-info">
+            <h4>{{ person.name }}</h4>
+            <p>{{ person.currentRank }} - {{ person.currentDutyTitle }}</p>
+            <p *ngIf="person.careerEndDate" class="career-end">
+              Career ended: {{ person.careerEndDate | date:'MMM d, y' }}
+            </p>
+          </div>
+          <span [class]="'status-badge ' + getStatusBadgeClass(person.currentDutyTitle)">
+            {{ getStatusText(person.currentDutyTitle) }}
+          </span>
+        </div>
+        <div *ngIf="getPeopleByStatus('retired').length === 0" class="no-data">
+          No retired astronauts found.
+        </div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h2>Unassigned People</h2>
+      <div class="report-list">
+        <div *ngFor="let person of getPeopleByStatus('unassigned')" class="report-item">
+          <div class="person-info">
+            <h4>{{ person.name }}</h4>
+            <p>No astronaut assignment</p>
+          </div>
+          <span [class]="'status-badge ' + getStatusBadgeClass(person.currentDutyTitle)">
+            {{ getStatusText(person.currentDutyTitle) }}
+          </span>
+        </div>
+        <div *ngIf="getPeopleByStatus('unassigned').length === 0" class="no-data">
+          All people have astronaut assignments.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

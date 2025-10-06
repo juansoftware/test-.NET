@@ -1,0 +1,98 @@
+<div class="dashboard">
+  <div class="dashboard-header">
+    <h1>Dashboard</h1>
+    <p>Welcome to Stargate Astronaut Career Tracking System</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-content">
+        <h3>{{ stats.totalPeople }}</h3>
+        <p>Total People</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">🚀</div>
+      <div class="stat-content">
+        <h3>{{ stats.activeAstronauts }}</h3>
+        <p>Active Astronauts</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">🎖️</div>
+      <div class="stat-content">
+        <h3>{{ stats.retiredAstronauts }}</h3>
+        <p>Retired Astronauts</p>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">📋</div>
+      <div class="stat-content">
+        <h3>{{ stats.totalDuties }}</h3>
+        <p>Total Duties</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="dashboard-content">
+    <div class="dashboard-section">
+      <div class="section-header">
+        <h2>Recent People</h2>
+        <a routerLink="/people" class="view-all-link">View All</a>
+      </div>
+      
+      <div class="people-list">
+        <div *ngFor="let person of recentPeople" class="person-card">
+          <div class="person-info">
+            <h4>{{ person.name }}</h4>
+            <p class="person-details">
+              <span *ngIf="person.currentRank">{{ person.currentRank }}</span>
+              <span *ngIf="person.currentDutyTitle"> - {{ person.currentDutyTitle }}</span>
+            </p>
+          </div>
+          <div class="person-status">
+            <span [class]="'status-badge ' + getStatusBadgeClass(person.currentDutyTitle)">
+              {{ getStatusText(person.currentDutyTitle) }}
+            </span>
+          </div>
+        </div>
+        
+        <div *ngIf="recentPeople.length === 0" class="empty-state">
+          <p>No people found. <a routerLink="/people">Add your first person</a></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-section">
+      <div class="section-header">
+        <h2>Quick Actions</h2>
+      </div>
+      
+      <div class="quick-actions">
+        <a routerLink="/people" class="action-card">
+          <div class="action-icon">👤</div>
+          <h4>Add Person</h4>
+          <p>Register a new person in the system</p>
+        </a>
+        
+        <a routerLink="/astronaut-duties" class="action-card">
+          <div class="action-icon">📋</div>
+          <h4>Assign Duty</h4>
+          <p>Create a new astronaut duty assignment</p>
+        </a>
+        
+        <a routerLink="/reports" class="action-card">
+          <div class="action-icon">📊</div>
+          <h4>View Reports</h4>
+          <p>Generate career and duty reports</p>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
